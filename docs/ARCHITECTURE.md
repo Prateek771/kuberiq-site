@@ -92,7 +92,7 @@ There is no enquiry endpoint, database, authentication flow, or operational CRM 
 
 Dedicated privacy and terms pages explain these boundaries. Open Graph metadata points to a locally generated 1200x630 branded card. The six pages and current assets were verified on the Wix production URL on 25 October 2026; the hosting header gap is recorded in `SECURITY-REVIEW.md`.
 
-Wix intercepts `/sitemap.xml` on this deployment. The identical six-URL sitemap is also provided at `/sitemap-index.xml`, the non-reserved naming pattern recommended by Wix, and the source `robots.txt` points to it. The standard filename is retained for other static hosts. Wix may serve or challenge its own `robots.txt`; deployment of the source file does not establish that Wix serves its contents.
+Wix intercepts `/sitemap.xml` on this deployment. The identical six-URL sitemap is available at `/sitemap-index.xml`, the non-reserved naming pattern recommended by Wix, and the source `robots.txt` points to it. The standard filename is retained for other static hosts. Wix serves its own crawler file: its Robots TXT API was updated and independently read back with the new sitemap directive while retaining its existing rules. The public cached crawler response still showed the former directive at release verification; edge propagation and search indexing remain unverified.
 
 Anchor navigation resolves the initial URL hash after React mounts and measures the sticky header once. A numeric Lenis destination prevents CSS scroll-margin and scroll-padding from being counted again. Popstate navigation also restores hash targets.
 
