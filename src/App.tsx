@@ -7,10 +7,11 @@ import ScrollScene from './ScrollScene';
 import { useReveal } from './useReveal';
 import { useSmoothScroll } from './useSmoothScroll';
 import { discoveryBooking } from './booking';
+import { pageForPath } from './routing';
 import { HomeSections, PageHero, AutomationScope, AboutApproach, DiscoveryAgenda, NextStep } from './ServicePages';
 
 const navigation = [['Home', '/'], ['Voice Agents + CRM', '/voice-agents.html'], ['Custom Automations', '/automations.html'], ['About & Contact', '/contact.html']];
-const page = location.pathname.endsWith('voice-agents.html') ? 'voice' : location.pathname.endsWith('automations.html') ? 'automations' : location.pathname.endsWith('contact.html') ? 'contact' : 'home';
+const page = pageForPath(location.pathname);
 const contactHref = page === 'contact' ? '#contact' : '/contact.html#contact';
 const capabilityIcons = [Phone, UserRound, CalendarDays, ContactRound];
 const process = [

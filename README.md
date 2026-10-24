@@ -52,11 +52,22 @@ Open **http://127.0.0.1:5200/**.
 
 ```sh
 npm test          # Motion, interpolation and cache behaviour
+npm run test:security # Build and check real preview response headers
 npm run build    # Type checking and production bundle
 npm run preview  # Local preview of the built files
 ```
 
 `npm run preview` is for local validation, not a production server. Deploy only the generated `dist/` directory to a suitable static host after configuring its security headers and live integrations.
+
+## Security configuration
+
+Direct dependencies are pinned to the audited lockfile versions; use `npm ci` for repeatable installs. Extensionless service routes (`/voice-agents`, `/automations`, `/contact`) and their trailing-slash forms select the same content as the canonical `.html` links when the host serves the app for those paths.
+
+`security-headers.ts` supplies CSP, framing restrictions, MIME-sniffing protection, referrer policy and permissions policy to both local servers. Production scripts are restricted to the same origin. Inline styles remain allowed for the existing React animation styles, and Google Fonts remain allowed to preserve typography. Only development permits Vite's inline bootstrap and loopback WebSocket connection. Form submission is blocked by CSP while delivery remains an explicit preview.
+
+Each production build emits `dist/_headers` from the same configuration. Hosts supporting that manifest format can apply it directly; other hosts (including any selected Wix deployment) must have the equivalent response headers configured through their supported hosting controls. Uploading a file does not establish that a host enforces it. Verify actual response headers after deployment. Do not substitute an HTML meta tag for framing protection. HTTPS/HSTS remains a host-level launch check; no production account or DNS is changed by this repository.
+
+Configuration references: [Vite preview headers](https://vite.dev/config/preview-options#preview-headers), [Vite development headers](https://vite.dev/config/server-options#server-headers), and [CSP inline style handling](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/style-src-attr).
 
 ## Stack and structure
 
