@@ -98,7 +98,7 @@ docs/               Public project brief, architecture and screenshots
 
 ## Status and boundaries
 
-This is a working frontend with the owner-approved Calendly destination and email enquiry links. Website privacy and service information describe these implemented flows. Production hosting, deployed metadata/headers, and project-specific legal agreements remain separate acceptance tasks. Email delivery has not been tested by sending messages, and no meetings are booked as part of frontend checks. Example workflows are illustrative; there are no claimed client results or guaranteed business outcomes.
+This is a working frontend with the owner-approved Calendly destination and email enquiry links. Website privacy and service information describe these implemented flows. The six pages, current animation assets, and Calendly embed were verified on Wix on 25 October 2026. The production header gap is documented in [the security review](docs/SECURITY-REVIEW.md). The sitemap uses `/sitemap-index.xml` because Wix intercepts the standard path; crawler discovery and search indexing remain unverified. Project-specific legal agreements remain a separate acceptance task. Email delivery has not been tested by sending messages, and no meetings are booked as part of frontend checks. Example workflows are illustrative; there are no claimed client results or guaranteed business outcomes.
 
 Security coverage and limitations are recorded in [the review notes](docs/SECURITY-REVIEW.md). A passing build or an empty scanner report does not certify an application as vulnerability-free.
 

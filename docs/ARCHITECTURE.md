@@ -90,7 +90,9 @@ There is no enquiry endpoint, database, authentication flow, or operational CRM 
 
 `BookingSection` creates the Calendly iframe only after a visitor asks to view it. Closing the disclosure unmounts the iframe. A direct external booking link is always available. CSP allows only the Calendly frame origin while retaining existing script, object, framing, and form restrictions. Email links open the visitor's mail application; the site does not submit a message or display a false delivery confirmation.
 
-Dedicated privacy and terms pages explain these boundaries. Open Graph metadata points to a locally generated 1200x630 branded card; production URL and header acceptance still require deployment checks.
+Dedicated privacy and terms pages explain these boundaries. Open Graph metadata points to a locally generated 1200x630 branded card. The six pages and current assets were verified on the Wix production URL on 25 October 2026; the hosting header gap is recorded in `SECURITY-REVIEW.md`.
+
+Wix intercepts `/sitemap.xml` on this deployment. The identical six-URL sitemap is also provided at `/sitemap-index.xml`, the non-reserved naming pattern recommended by Wix, and the source `robots.txt` points to it. The standard filename is retained for other static hosts. Wix may serve or challenge its own `robots.txt`; deployment of the source file does not establish that Wix serves its contents.
 
 Anchor navigation resolves the initial URL hash after React mounts and measures the sticky header once. A numeric Lenis destination prevents CSS scroll-margin and scroll-padding from being counted again. Popstate navigation also restores hash targets.
 
