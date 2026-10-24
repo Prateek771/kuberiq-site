@@ -73,3 +73,9 @@ Static review cannot establish the security of a deployment that has not been te
 Strix's final machine-readable coverage file retains one `information disclosure` classification gap, despite related artifact/exposure entries and narrative evidence. Its narrative claim of no coverage gaps is therefore not adopted here. Browser checks used one Chromium environment; live hosting, repository history, external services, customer data and load testing were excluded.
 
 The sandbox's default test runner could not load TypeScript; its alternate loader also reported failures. A separate unmodified Windows `npm test` run after scanning passed all 15 tests. The sandbox failure is not reproduced as an application regression; runner portability remains a limitation. The sandbox production build passed, and no application source fixes were made.
+
+## Hosting verification — 25 October 2026
+
+Before this release, the existing Wix production URL returned HTTPS 200 with `X-Content-Type-Options: nosniff`, but did not send the application's CSP, X-Frame-Options, or Referrer-Policy headers. Vite development/preview enforce `security-headers.ts`; the generated `_headers` file is a deployment manifest for hosts that support it and is not evidence of enforcement on Wix. No supported custom static response-header configuration was found in the targeted Wix Headless documentation search or installed CLI config/schema search. This is an observed hosting gap, not a passing production security-header check. The release does not disable existing host protections or alter authentication, DNS, or email.
+
+The source CSP now permits only the approved Calendly frame origin. The iframe is click-to-load, with no automatic third-party calendar load. Inactive enquiry fields are removed; direct email links replace the form, and form submissions remain blocked by the source policy.

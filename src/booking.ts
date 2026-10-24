@@ -1,6 +1,7 @@
-// Awaiting a verified Wix shareable calendar link. The previous .in route
-// redirected to the old homepage; do not guess a replacement on kuberiq.si.
+// Owner-approved booking destination and enquiry contacts.
 export const discoveryBooking = {
-  url: '',
-  ready: false,
+  url: 'https://calendly.com/prateek-kuberiq/30min',
+  ready: true,
 } as const;
+
+export const enquiryEmails = ['prateek@kuberiq.si', 'venkatesh@kuberiq.si'] as const;

@@ -15,5 +15,5 @@ export default defineConfig({
   }],
   server: { host: '127.0.0.1', headers: securityHeaders(true) },
   preview: { host: '127.0.0.1', headers: securityHeaders() },
-  build: { rolldownOptions: { input: ['index.html', 'voice-agents.html', 'automations.html', 'contact.html'] } },
+  build: { rolldownOptions: { input: ['index.html', 'voice-agents.html', 'automations.html', 'contact.html', 'privacy.html', 'terms.html'] } },
 });

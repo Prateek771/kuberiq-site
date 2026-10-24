@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { pageSequenceProgress, FrameCache, frameWindow } from '../src/sequence.ts';
+import { pageSequenceProgress, FrameCache, frameWindow, detailLoadOrder } from '../src/sequence.ts';
 
 test('animation follows the complete document linearly and finishes at the footer', () => {
   assert.equal(pageSequenceProgress(0, 1000, 10000), 0);
@@ -72,4 +72,27 @@ test('ready frames can be painted synchronously without triggering a decode', as
   assert.equal(loads, 1);
   cache.dispose();
   assert.equal(cache.peek(1), undefined);
+});
+
+test('moving detail requests cover the exact blend pair before anticipating scroll direction', () => {
+  const progress = 20.6 / 240;
+  const forward = detailLoadOrder(progress, 1, 241, 12);
+  const backward = detailLoadOrder(progress, -1, 241, 12);
+  assert.deepEqual(forward.slice(0, 2), [20, 21]);
+  assert.deepEqual(backward.slice(0, 2), [20, 21]);
+  assert.ok(forward.indexOf(25) < forward.indexOf(17));
+  assert.ok(backward.indexOf(17) < backward.indexOf(25));
+});
+
+test('detail prefetch stays within the bitmap budget at both endpoints and on short sequences', () => {
+  for (const count of [1, 2, 241]) {
+    for (const progress of [-1, 0, .5, 1, 2]) {
+      for (const limit of [8, 12]) {
+        const order = detailLoadOrder(progress, 1, count, limit);
+        assert.ok(order.length <= limit);
+        assert.equal(order.length, new Set(order).size);
+        assert.ok(order.every(frame => frame >= 0 && frame < count));
+      }
+    }
+  }
 });

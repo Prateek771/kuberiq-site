@@ -1,4 +1,4 @@
-import { progressWithin } from './motion.ts';
+import { frameBlend, progressWithin } from './motion.ts';
 
 // Map the complete document evenly to the video, as in the recreation brief.
 export function pageSequenceProgress(offset: number, viewportHeight: number, documentHeight: number) {
@@ -38,6 +38,13 @@ export function frameWindow(position: number, direction: number, count: number) 
     order.push(center - distance * (direction < 0 ? -1 : 1));
   }
   return [...new Set(order)].filter(index => index >= 0 && index < count);
+}
+
+// Always load the two frames for the current position before looking ahead.
+// Keep the request window no larger than the decoded bitmap cache.
+export function detailLoadOrder(progress: number, direction: number, count: number, limit: number) {
+  const pair = frameBlend(progress, count);
+  return [...new Set([pair.lower, pair.upper, ...frameWindow(progressWithin(progress, 1) * (count - 1), direction, count)])].slice(0, limit);
 }
 
 export class FrameCache<T extends { close(): void }> {

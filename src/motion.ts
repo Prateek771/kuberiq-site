@@ -15,6 +15,13 @@ export function canvasResolution(width: number, height: number, pixelRatio: numb
   return { width: Math.max(1, Math.round(width * scale)), height: Math.max(1, Math.round(height * scale)) };
 }
 
+// Decode the native 16:9 source at the resolution needed to cover the canvas.
+// The canvas already incorporates DPR; never synthesize pixels above 1080p.
+export function detailResolution(width: number, height: number) {
+  const scale = Math.min(1, Math.max(width / 1920, height / 1080));
+  return { width: Math.max(1, Math.ceil(1920 * scale)), height: Math.max(1, Math.ceil(1080 * scale)) };
+}
+
 export function cacheFrameCount(duration: number): number {
   return Number.isFinite(duration) ? Math.max(24, Math.min(90, Math.round(duration*12))) : 24;
 }

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { progressWithin, coverRect, cacheFrameCount, scrubVideo, frameBlend, canvasResolution } from '../src/motion.ts';
+import { progressWithin, coverRect, cacheFrameCount, scrubVideo, frameBlend, canvasResolution, detailResolution } from '../src/motion.ts';
 
 test('scroll progress clamps at both ends and handles a non-scrollable page', () => {
   assert.equal(progressWithin(-20, 1000), 0);
@@ -22,6 +22,13 @@ test('canvas retains native source detail without allocating an upscaled retina 
   assert.deepEqual(canvasResolution(390, 844, 3), { width: 499, height: 1080 });
   assert.deepEqual(canvasResolution(3840, 2160, 2), { width: 1920, height: 1080 });
   assert.deepEqual(canvasResolution(800, 600, 1), { width: 800, height: 600 });
+});
+
+test('detail decoding supplies covered device pixels without retaining an unnecessarily large bitmap', () => {
+  assert.deepEqual(detailResolution(1280, 720), { width: 1280, height: 720 });
+  assert.deepEqual(detailResolution(390, 468), { width: 832, height: 468 });
+  assert.deepEqual(detailResolution(1728, 1080), { width: 1920, height: 1080 });
+  assert.deepEqual(detailResolution(3840, 2160), { width: 1920, height: 1080 });
 });
 
 test('frame cache has a bounded memory budget, including long or invalid videos', () => {

@@ -1,18 +1,17 @@
 import { useEffect, useState } from 'react';
-import type { CSSProperties, FormEvent, ReactNode } from 'react';
-import { ArrowUpRight, ArrowRight, ArrowDown, Check, CheckCheck, Phone, CalendarDays, ContactRound, MessageCircle, Link2, Database, CreditCard, UserRound, Workflow, Globe2, Menu, X, MoveUpRight } from 'lucide-react';
+import type { CSSProperties, ReactNode } from 'react';
+import { ArrowUpRight, ArrowRight, ArrowDown, Phone, CalendarDays, ContactRound, MessageCircle, Link2, Database, CreditCard, UserRound, Workflow, Globe2, Menu, X, MoveUpRight } from 'lucide-react';
 import { capabilities, delivery, faqs } from './content';
 import OpeningSequence from './OpeningSequence';
 import ScrollScene from './ScrollScene';
 import { useReveal } from './useReveal';
 import { useSmoothScroll } from './useSmoothScroll';
-import { discoveryBooking } from './booking';
+import { BookingLink as BookLink, HomeSections, Vision, HowWeWork, BookingSection, LegalContent } from './Presentation';
 import { pageForPath } from './routing';
-import { HomeSections, PageHero, AutomationScope, AboutApproach, DiscoveryAgenda, NextStep } from './ServicePages';
+import { PageHero, AutomationScope } from './ServicePages';
 
 const navigation = [['Home', '/'], ['Voice Agents + CRM', '/voice-agents.html'], ['Custom Automations', '/automations.html'], ['About & Contact', '/contact.html']];
 const page = pageForPath(location.pathname);
-const contactHref = page === 'contact' ? '#contact' : '/contact.html#contact';
 const capabilityIcons = [Phone, UserRound, CalendarDays, ContactRound];
 const process = [
   ['A lead comes in', 'An enquiry arrives by phone or through your connected form, campaign, or CRM. Existing leads can also enter an agreed follow-up campaign.', MessageCircle],
@@ -24,14 +23,8 @@ const process = [
 function Reveal({ children, className = '', delay = 0 }: {children: ReactNode; className?: string; delay?: number}) {
   return <div data-reveal className={className} style={{ '--reveal-delay': `${delay}ms` } as CSSProperties}>{children}</div>;
 }
-function BookLink({ className = '' }: { className?: string }) {
-  return <a className={`button ${className}`} href={discoveryBooking.ready ? discoveryBooking.url : contactHref}><span>Book a Discovery Call</span><span className="button-arrow"><ArrowUpRight size={18} aria-hidden="true" /></span></a>;
-}
-
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [notice, setNotice] = useState('');
-  const [service, setService] = useState(new URLSearchParams(location.search).get('service') === 'automations' ? 'Custom automations' : new URLSearchParams(location.search).get('service') === 'website' ? 'Website design' : 'AI voice agents + CRM');
   useReveal();
   useSmoothScroll();
   useEffect(() => {
@@ -39,11 +32,6 @@ export default function App() {
     document.addEventListener('keydown', closeMenu);
     return () => document.removeEventListener('keydown', closeMenu);
   }, []);
-
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setNotice("This preview doesn't send enquiries yet. Booking and enquiry connections will be added before launch.");
-  }
 
   return <>
     <ScrollScene />
@@ -59,14 +47,14 @@ export default function App() {
     </header>
 
     <main id="main" className={`page-${page}`}>
-      {page === 'home' && <><OpeningSequence callToAction={<BookLink/>}/><div className="cinema-spacer" aria-hidden="true"/><HomeSections callToAction={<BookLink/>}/></>}
+      {page === 'home' && <><OpeningSequence callToAction={<BookLink/>}/><div className="cinema-spacer" aria-hidden="true"/><HomeSections/></>}
       {page === 'voice' && <>
         <PageHero title="AI voice agents. Connected CRM. Less chasing." body="Answer enquiries, qualify interest, book appointments and keep follow-up moving—with your existing CRM or one included in your solution."><BookLink/><a className="text-link" href="#how-it-works">Follow an enquiry through <ArrowDown size={16}/></a></PageHero>
       <section id="what-we-do" className="capabilities section-pad">
         <div className="content-width">
           <Reveal className="section-heading"><div><p className="eyebrow">VOICE AGENTS</p><h2>What your agent<br/>can handle.</h2></div><p>We build around the routine work that keeps coming back to you—using your service information, qualification questions, and booking rules.</p></Reveal>
           <div className="capability-grid">{capabilities.map((item, index) => {const Icon = capabilityIcons[index]; return <Reveal delay={index*90} className="capability" key={item.title}><div className="capability-top"><span className="index">0{index+1}</span><span className="icon-disc"><Icon size={24} strokeWidth={1.5}/></span></div><h3>{item.title}</h3><p>{item.body}</p></Reveal>;})}</div>
-          <Reveal className="capability-note"><span className="tiny-dot"/><p>For new enquiries, we can configure a first-call target of five minutes during your agreed calling hours.</p></Reveal>
+          <Reveal className="capability-note"><span className="tiny-dot"/><p>We agree response targets, calling hours, retry limits, and handover rules around your process and connected tools.</p></Reveal>
         </div>
       </section>
 
@@ -125,26 +113,19 @@ export default function App() {
             </div>
             <a href="/contact.html?service=automations#contact" className="text-link">Discuss Your Requirements <MoveUpRight size={15}/></a>
           </Reveal>
-          <div id="website-design"><Reveal delay={140} className="other-service"><Globe2 size={25} strokeWidth={1.5}/><h3>Website design</h3><p>A clear, distinctive website that explains your offer and gives visitors an easy way to enquire or book. Connected to your CRM so the next step is ready when an enquiry arrives.</p><a href="/contact.html?service=website#contact" className="text-link">Discuss Your Project <MoveUpRight size={15}/></a></Reveal></div>
+          <div id="website-design"><Reveal delay={140} className="other-service"><Globe2 size={25} strokeWidth={1.5}/><h3>Website design</h3><p>A clear, distinctive website that explains your offer and gives visitors an easy way to enquire or book. We can assess a supported CRM connection as part of the project, so each enquiry has a clear next step.</p><a href="/contact.html?service=website#contact" className="text-link">Discuss Your Project <MoveUpRight size={15}/></a></Reveal></div>
         </div>
       </section>
 
         <AutomationScope/>
       </>}
       {page === 'contact' && <>
-        <PageHero title="Let's make the everyday work easier." body="Voice agents, connected CRM and automations shaped around your business. Start with the process that takes more attention than it should."><a className="button" href="#contact">Tell us what you need <ArrowDown size={18}/></a></PageHero>
-        <AboutApproach/><DiscoveryAgenda/>
-      <section id="contact" className="contact section-pad">
-        <div className="contact-atmosphere" aria-hidden="true"/>
-        <div className="content-width contact-layout">
-          <Reveal className="contact-copy"><p className="eyebrow">LET'S TALK</p><h2>Tell us about<br/>your business.</h2><p>Fewer callbacks to remember. Fewer payments to check. Fewer routine questions following you home.</p><p>Let's find the work an AI voice agent and connected CRM could take off your hands—so there's more room for your customers during the day, and the people at home afterwards.</p><div className="contact-booking"><span className="icon-disc"><CalendarDays size={23}/></span><div><a href={discoveryBooking.ready ? discoveryBooking.url : contactHref}><strong>Book a Discovery Call</strong></a><p>{discoveryBooking.ready ? 'Free · 30 minutes · Online meeting. Choose an available time in the booking calendar.' : 'The booking calendar will be connected here before launch.'}</p></div></div></Reveal>
-          <Reveal delay={120} className="enquiry-panel"><h3>Prefer to leave a message?</h3><p>Choose a service and describe the process you would like to improve.</p><form onSubmit={submit}><div className="form-grid"><label>Your name <span>*</span><input name="name" autoComplete="name" required/></label><label>Work email <span>*</span><input name="email" type="email" autoComplete="email" required/></label><label>Business name <span>*</span><input name="business" autoComplete="organization" required/></label><label>Phone number <span className="optional">(optional)</span><input name="phone" type="tel" autoComplete="tel"/></label></div><label>What would you like help with?<select name="service" value={service} onChange={event => setService(event.target.value)}><option>AI voice agents + CRM</option><option>Custom automations</option><option>Website design</option></select></label><label>Tell us about your current process <span>*</span><textarea name="message" required rows={4} placeholder="Which calls or follow-up tasks keep coming back to you? Tell us how your team handles them and which CRM or booking tools you use."/></label><p className="preview-note">Website preview · Enquiries aren't sent yet.</p><button type="submit" className="button">Send Enquiry <ArrowUpRight size={17}/></button><p className="form-notice" role="status" aria-live="polite">{notice}</p><p className="fine-print">When connected, we’ll use these details to respond to your enquiry. A business-specific privacy policy will be added before launch.</p></form></Reveal>
-        </div>
-      </section>
+        <PageHero title="Let's make the everyday work easier." body="Voice agents, connected CRM, and automations shaped around your business. Start with the process that takes more attention than it should."><BookLink/><a className="text-link" href="#contact">Prefer email? <ArrowDown size={18}/></a></PageHero>
+        <Vision/><HowWeWork/>
       </>}
-      {page !== 'contact' && <NextStep><BookLink/></NextStep>}
+      {(page === 'privacy' || page === 'terms') ? <LegalContent kind={page}/> : <BookingSection showContact={page === 'contact'}/>}
     </main>
 
-    <footer><div className="content-width footer-layout"><div><a className="wordmark" href="/">Kuber<span>IQ</span></a><p>AI voice agents. Connected CRM. Less chasing.</p><span className="footer-domain">kuberiq.si</span></div><nav aria-label="Footer navigation">{navigation.map(([label,href])=><a key={href} href={href}>{label}</a>)}</nav><p className="copyright">© {new Date().getFullYear()} KuberIQ.</p></div><div className="content-width legal-preview"><details><summary>Privacy Policy</summary><p>This local website preview does not send or store form entries. The final policy will describe the business, enquiry recipient and selected service providers before enquiries are enabled.</p></details><details><summary>Terms</summary><p>This is a website preview. Service scope, supported integrations, platform access, usage and ongoing costs will be agreed in a written proposal. Final business terms will be supplied before publication.</p></details><span>Designed to give your day a little room.</span></div></footer>
+    <footer><div className="content-width footer-layout"><div><a className="wordmark" href="/">Kuber<span>IQ</span></a><p>AI voice agents. Connected CRM. Less chasing.</p><span className="footer-domain">kuberiq.si</span></div><nav aria-label="Footer navigation">{navigation.map(([label,href])=><a key={href} href={href}>{label}</a>)}</nav><p className="copyright">© {new Date().getFullYear()} KuberIQ.</p></div><div className="content-width legal-preview"><a href="/privacy.html">Privacy notice</a><a href="/terms.html">Website &amp; service terms</a><a href="mailto:prateek@kuberiq.si">prateek@kuberiq.si</a><a href="mailto:venkatesh@kuberiq.si">venkatesh@kuberiq.si</a><span>Designed to give your day a little room.</span></div></footer>
   </>;
 }

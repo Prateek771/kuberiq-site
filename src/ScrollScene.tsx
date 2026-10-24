@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { canvasResolution, coverRect, frameBlend, scrubVideo } from './motion';
-import { FrameCache, availableFrameBlend, previewLoadOrder, pageSequenceProgress } from './sequence';
+import { canvasResolution, coverRect, detailResolution, frameBlend, scrubVideo } from './motion';
+import { FrameCache, availableFrameBlend, detailLoadOrder, previewLoadOrder, pageSequenceProgress } from './sequence';
 import { subscribeScrollFrame } from './scrollClock';
 
 const FRAME_COUNT = 90;
@@ -17,7 +17,7 @@ export default function ScrollScene() {
     let reduced = preference.matches, disposed = false, dirty = true;
     let lastProgress = -1, viewport = innerHeight, documentHeight = document.documentElement.scrollHeight;
     let frames: ImageBitmap[] = [], loading: AbortController | null = null;
-    let previewSettled = false, lastMovement = 0, wasSettled = false;
+    let previewSettled = false, travelDirection = 1;
     let hd: ReturnType<typeof createDetailCache> | null = null;
     const setMedia = (media: string) => { if (scene.dataset.media !== media) scene.dataset.media = media; };
 
@@ -25,12 +25,16 @@ export default function ScrollScene() {
       const controller = new AbortController();
       const active = new Set<number>(), failed = new Set<number>();
       let wanted: number[] = [];
-      // Keep two detail pairs (~32 MiB), and fetch only the settled position.
-      // The smooth preview sequence handles movement without HD decode churn.
-      const cache = new FrameCache<ImageBitmap>(4, async index => {
+      // Bound native detail to ~95 MiB desktop / ~63 MiB mobile. The complete
+      // preview remains available, so missing detail never delays the timeline.
+      const limit = matchMedia('(max-width: 767px)').matches ? 8 : 12;
+      const size = detailResolution(surface.width, surface.height);
+      scene.dataset.detailLimit = String(limit);
+      scene.dataset.detailDecodeWidth = String(size.width);
+      const cache = new FrameCache<ImageBitmap>(limit, async index => {
         const response = await fetch('/frames-hd/frame-' + String(index).padStart(3, '0') + '.webp', { signal: controller.signal });
         if (!response.ok) throw new Error('Detail frame unavailable');
-        return createImageBitmap(await response.blob());
+        return createImageBitmap(await response.blob(), { resizeWidth: size.width, resizeHeight: size.height, resizeQuality: 'high' });
       });
       function pump() {
         if (controller.signal.aborted || document.hidden) return;
@@ -46,9 +50,9 @@ export default function ScrollScene() {
       }
       return {
         cache,
-        request(progress: number | null) {
-          const pair = progress === null ? null : frameBlend(progress, HD_FRAME_COUNT);
-          wanted = pair ? [...new Set([pair.lower, pair.upper])] : [];
+        width: size.width,
+        request(progress: number | null, direction: number) {
+          wanted = progress === null ? [] : detailLoadOrder(progress, direction, HD_FRAME_COUNT, limit);
           pump();
         },
         dispose() { controller.abort(); cache.dispose(); },
@@ -108,21 +112,18 @@ export default function ScrollScene() {
       }
     }
 
-    function tick(position: number, time: number) {
+    function tick(position: number) {
       if (disposed || document.hidden || reduced) return;
       const progress = pageSequenceProgress(position, viewport, documentHeight);
       // Lenis already eased this position. A second lerp would make artwork lag.
       const moved = Math.abs(progress - lastProgress) >= .000001;
-      if (moved) lastMovement = time;
-      const settled = time - lastMovement >= 160;
-      if (settled !== wasSettled) dirty = true;
-      wasSettled = settled;
-      hd?.request(settled && previewSettled ? progress : null);
+      if (moved && lastProgress >= 0) travelDirection = progress > lastProgress ? 1 : -1;
+      hd?.request(previewSettled ? progress : null, travelDirection);
       if (!dirty && !moved) return;
       scene.dataset.targetProgress = scene.dataset.progress = progress.toFixed(5);
       const detail = frameBlend(progress, HD_FRAME_COUNT);
-      const detailFirst = settled ? hd?.cache.peek(detail.lower) : undefined;
-      const detailSecond = settled ? (detail.mix > .001 ? hd?.cache.peek(detail.upper) : detailFirst) : undefined;
+      const detailFirst = hd?.cache.peek(detail.lower);
+      const detailSecond = detail.mix > .001 ? hd?.cache.peek(detail.upper) : detailFirst;
       const preview = availableFrameBlend(progress, FRAME_COUNT, frames);
       if ((preview || (detailFirst && detailSecond)) && context) {
         const highResolution = Boolean(detailFirst && detailSecond);
@@ -137,9 +138,12 @@ export default function ScrollScene() {
           context.drawImage(second, rect.x, rect.y, rect.width, rect.height);
           context.globalAlpha = 1;
         }
-        scene.dataset.frame = String(Math.round(progress * (FRAME_COUNT - 1)));
+        // Report the actual picture, including a held endpoint during loading.
+        // A target-derived value would conceal gaps in the available sequence.
+        const renderedProgress = (lower + (upper - lower) * mix) / ((highResolution ? HD_FRAME_COUNT : FRAME_COUNT) - 1);
+        scene.dataset.frame = String(Math.round(renderedProgress * (FRAME_COUNT - 1)));
         scene.dataset.renderWidth = String(first.width);
-        scene.dataset.quality = highResolution ? '1080p' : 'preview';
+        scene.dataset.quality = highResolution ? 'native-detail' : 'preview';
         setMedia('canvas');
         dirty = false;
       } else {
@@ -154,6 +158,13 @@ export default function ScrollScene() {
       const { width, height } = canvasResolution(surface.clientWidth, surface.clientHeight, devicePixelRatio);
       if (surface.width !== width || surface.height !== height) {
         surface.width = width; surface.height = height;
+      }
+      if (context) {
+        context.imageSmoothingEnabled = true;
+        context.imageSmoothingQuality = 'high';
+      }
+      if (hd && hd.width !== detailResolution(surface.width, surface.height).width) {
+        hd.dispose(); hd = createDetailCache();
       }
       dirty = true;
     }

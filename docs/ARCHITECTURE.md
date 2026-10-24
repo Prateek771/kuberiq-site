@@ -2,27 +2,28 @@
 
 ## Application structure
 
-KuberIQ is a client-rendered React and TypeScript site built with Vite. Four HTML entry points share the application bundle. `App.tsx` selects the page from the pathname; there is no client-side routing dependency or application server in this project.
+KuberIQ is a client-rendered React and TypeScript site built with Vite. Six HTML entry points share the application bundle. `App.tsx` selects the page from the pathname; there is no client-side routing dependency or application server in this project.
 
 | Area | Source | Responsibility |
 | --- | --- | --- |
 | Entry and styles | `src/main.tsx` | Mount React, load the stylesheet layers and initialize optional motion diagnostics |
-| Shared application | `src/App.tsx` | Header, navigation, page selection, service sections, contact preview and footer |
+| Shared application | `src/App.tsx` | Header, navigation, page selection, service sections, contact composition and footer |
 | Home introduction | `src/OpeningSequence.tsx` | Introductory composition and primary call to action |
-| Reusable page sections | `src/ServicePages.tsx` | Page heroes, home supporting sections, working approach, scope and next steps |
+| Reusable page sections | `src/ServicePages.tsx` | Page heroes and automation scope |
 | Content data | `src/content.ts` | Capabilities, delivery stages and FAQ copy |
-| Booking configuration | `src/booking.ts` | Destination readiness and URL; currently inactive |
+| Presentation sections | `src/Presentation.tsx`, `src/presentation.css` | Workflow example, delivery, vision, booking, email contact and legal pages |
+| Booking configuration | `src/booking.ts` | Owner-approved Calendly destination and two enquiry addresses |
 | Scene renderer | `src/ScrollScene.tsx` | Preview loading, detail cache, canvas painting, fallback media and lifecycle cleanup |
 | Scroll coordination | `src/useSmoothScroll.ts`, `src/scrollClock.ts` | Shared frame loop and anchor navigation |
 | Motion helpers | `src/motion.ts`, `src/sequence.ts` | Progress, image sizing, frame blending, progressive ordering and cache behavior |
 | Content entrances | `src/useReveal.ts` | Intersection and focus-driven entrance state |
 | Final visual overrides | `src/brand.css` | Current palette, reading surfaces, responsive adjustments and motion preferences |
 
-The dependency set includes React, React DOM, Lenis and Lucide icons. Vite uses the React and Tailwind plugins; the interface's current styling is primarily expressed in the repository's CSS files. The lockfile is the reproducible dependency record for packages whose manifest ranges are `latest`.
+The dependency set includes React, React DOM, Lenis and Lucide icons. Vite uses the React and Tailwind plugins; the interface's current styling is primarily expressed in the repository's CSS files. The lockfile is the reproducible dependency record for the pinned direct dependencies.
 
 ## Rendering and style layers
 
-`main.tsx` loads `styles.css`, `refinements.css`, `cinema.css`, `services.css` and then `brand.css`. Later rules refine the earlier visual treatments. The final pale blue-grey and dark teal declarations near the end of `brand.css` determine the current panel, text, action and field colors.
+`main.tsx` loads `styles.css`, `refinements.css`, `cinema.css`, `services.css` `brand.css` and then `presentation.css`. Later rules refine the earlier visual treatments. The final pale blue-grey and dark teal declarations near the end of `brand.css` determine the current panel, text, action and field colors.
 
 The decorative scene is fixed behind the document, ignores pointer input and is hidden from assistive technology. Ordinary content remains in document flow above it. The header is fixed; the cinematic home introduction and capability section use viewport-based minimum heights, with an 80vh spacer between them.
 
@@ -59,9 +60,11 @@ All successfully loaded preview frames remain cached until cleanup. Once complet
 
 The source also includes a 241-frame, 1920×1080 detail sequence in `public/frames-hd/`. It is not all decoded at startup.
 
-After the page has stopped moving for 160ms and the preview requests have settled, the renderer requests the lower and upper detail frames for the current position. The detail cache retains at most four images, evicts the least recently used image and permits at most two active loads. Existing in-flight requests may finish if movement resumes; new detail requests follow the settled target.
+Once the progressive preview requests finish, the renderer requests the native pair for the current position and nearby frames in the direction of travel. The detail cache retains at most 12 images on desktop or 8 on mobile, with at most two active requests. Both interpolation frames are prioritized before look-ahead frames, including after a direction reversal.
 
-The renderer uses detail only when the required pair is ready. Otherwise, it draws the available preview. During movement, it uses the preview sequence. This trades a possible resolution change at rest for less detail decoding during interaction; it does not synthesize resolution beyond the source.
+Native source images are decoded to the device-pixel resolution needed to cover the canvas, capped at the original 1920x1080 source. High-quality bitmap resizing and canvas resampling avoid unnecessary oversized uploads. At a 1280x720 canvas, twelve decoded detail images are approximately 42 MiB; the full-source worst case is approximately 95 MiB desktop or 63 MiB mobile, excluding the preview cache, in-flight images and browser/GPU overhead. A viewport resolution change rebuilds only the detail cache.
+
+The renderer uses native detail during movement as soon as the exact pair is ready. Otherwise, it draws the available preview at the current progress; it never holds an old detail frame waiting for a download. The cost is more detail requests during scrolling. Slow networks may show preview quality until native frames arrive; no resolution is synthesized beyond the source.
 
 `FrameCache` coalesces duplicate requests, releases evicted images and closes images that finish loading after disposal. The component also aborts pending fetches during cleanup and when motion preferences change.
 
@@ -71,21 +74,25 @@ The canvas uses a non-alpha 2D context. It draws a centrally cropped cover image
 
 The renderer skips painting when progress, dimensions and resource readiness are unchanged. Hidden documents skip scene ticks. Visibility and page lifecycle events mark the scene for refresh.
 
-`hero-poster.jpg` is the initial image. Normal sequence loading does not download the fallback video. If canvas decoding is unavailable or no preview frames load, the component loads `hero.mp4` on demand and seeks it according to scroll progress. If that fails, the poster remains. The video is muted and inline, with no autoplay or loop. Media layers use a 500ms opacity transition.
+`hero-poster.jpg` is the initial image. Normal sequence loading does not download the fallback video. If canvas decoding is unavailable or no preview frames load, the component loads `hero.mp4` on demand and seeks it according to scroll progress. If that fails, the poster remains. The video is muted and inline, with no autoplay or loop. The scene preserves the approved media-layer styling.
 
 ## Content motion and accessibility
 
 The entrance system observes content at a 0.05 intersection threshold with a 64px bottom margin. Elements move from 12px below their final position over 350ms; their opacity remains 1. Content is therefore readable before the entrance finishes. Entrances run once, and keyboard focus reveals containing content immediately.
 
-Reduced motion prevents scene loading, retains the poster and removes entrance transitions. Preference changes release animation resources. Other implemented access features include a skip link, semantic navigation, current-page indication, visible focus outlines, an expandable mobile menu with Escape handling, native FAQ disclosure elements, labeled fields and an `aria-live` form status message.
+Reduced motion prevents scene loading, retains the poster and removes entrance transitions. Preference changes release animation resources. Other implemented access features include a skip link, semantic navigation, current-page indication, visible focus outlines, an expandable mobile menu with Escape handling, native FAQ disclosure elements, an accessible calendar disclosure, descriptive iframe title, and direct email alternatives.
 
 These features describe implementation, not a comprehensive accessibility certification. Keyboard, assistive-technology, zoom and device testing remain separate acceptance activities.
 
-## Contact preview and data boundary
+## Scheduling and contact boundary
 
-There is no enquiry endpoint, database, authentication flow or operational CRM connection in this frontend. `booking.ts` currently has an empty destination and `ready: false`; booking actions fall back to the contact section.
+There is no enquiry endpoint, database, authentication flow, or operational CRM connection in this frontend. `booking.ts` centralizes the approved Calendly link and two business email addresses.
 
-The form uses browser validation. Its submit handler prevents navigation and sets a message explaining that the preview does not send enquiries. It does not save or transmit the entered form values. Any future live integration needs its own delivery states, data handling and approved legal content.
+`BookingSection` creates the Calendly iframe only after a visitor asks to view it. Closing the disclosure unmounts the iframe. A direct external booking link is always available. CSP allows only the Calendly frame origin while retaining existing script, object, framing, and form restrictions. Email links open the visitor's mail application; the site does not submit a message or display a false delivery confirmation.
+
+Dedicated privacy and terms pages explain these boundaries. Open Graph metadata points to a locally generated 1200x630 branded card; production URL and header acceptance still require deployment checks.
+
+Anchor navigation resolves the initial URL hash after React mounts and measures the sticky header once. A numeric Lenis destination prevents CSS scroll-margin and scroll-padding from being counted again. Popstate navigation also restores hash targets.
 
 ## Build and tests
 
@@ -96,7 +103,7 @@ npm test
 npm run build
 ```
 
-The build runs TypeScript project checking before Vite generates the four-page static output in `dist/`. The test command uses Node's built-in test runner. Test files exercise progress clamping, forward/reverse mapping, cover and canvas sizing, frame interpolation, progressive loading order, partial sequences, seek completion and cache lifecycle behavior.
+The build runs TypeScript project checking before Vite generates the six-page static output in `dist/`. The test command uses Node's built-in test runner. Test files exercise progress clamping, forward/reverse mapping, cover and canvas sizing, frame interpolation, progressive loading order, partial sequences, seek completion and cache lifecycle behavior.
 
 Run tests and browser acceptance checks against the same revision. Unit tests verify deterministic calculations and resource rules; they do not measure frame rate, network behavior or visual quality. Review cold loading, rapid scroll reversal, expanded content, reduced motion, fallback media and mobile navigation separately in the browser.
 

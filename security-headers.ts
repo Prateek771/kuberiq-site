@@ -8,11 +8,13 @@ export function securityHeaders(development = false) {
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data:",
     "media-src 'self'",
+    // Scheduling is loaded only after the visitor asks to view the calendar.
+    "frame-src https://calendly.com",
     `connect-src 'self'${development ? ' ws://127.0.0.1:* ws://localhost:*' : ''}`,
     "object-src 'none'",
     "base-uri 'none'",
     "frame-ancestors 'none'",
-    // Enquiries are deliberately non-sending until a backend is implemented.
+    // Enquiries use the visitor's email app; this site has no form endpoint.
     "form-action 'none'",
   ].join('; ') + ';';
   return {

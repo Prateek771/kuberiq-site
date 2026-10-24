@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { pageForPath } from '../src/routing.ts';
 
 test('extensionless and trailing-slash routes select the same page as canonical links', () => {
-  for (const [path, expected] of [['voice-agents', 'voice'], ['automations', 'automations'], ['contact', 'contact']]) {
+  for (const [path, expected] of [['voice-agents', 'voice'], ['automations', 'automations'], ['contact', 'contact'], ['privacy', 'privacy'], ['terms', 'terms']]) {
     for (const suffix of ['.html', '', '/']) assert.equal(pageForPath(`/${path}${suffix}`), expected);
   }
 });

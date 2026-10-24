@@ -6,7 +6,7 @@ A cinematic, responsive website for an AI voice-agent and CRM service. Built wit
 
 ![KuberIQ cinematic homepage](docs/screenshots/hero.png)
 
-**[Project brief](docs/PROJECT-BRIEF.md) · [Architecture](docs/ARCHITECTURE.md) · [Security review](docs/SECURITY-REVIEW.md)**
+**[Live website](https://www.kuberiq.si/) · [Project brief](docs/PROJECT-BRIEF.md) · [Architecture](docs/ARCHITECTURE.md) · [Security review](docs/SECURITY-REVIEW.md)**
 
 ## The project
 
@@ -17,18 +17,25 @@ This repository contains the website experience. It does not contain an operatio
 ## Experience highlights
 
 - **Scroll-directed storytelling.** A fixed cinematic scene follows progress through the document and reverses when scrolling back.
-- **Progressive image quality.** A lightweight frame sequence supports motion, with native 1080p detail applied when scrolling settles.
-- **Readable surfaces.** Pale blue-grey panels, dark teal copy and clear form controls separate content from the moving artwork.
+- **Progressive image quality.** A progressively loaded preview keeps scrolling responsive; a bounded cache supplies native 1080p source detail during movement, sized to the display.
+- **Readable surfaces.** Pale blue-grey panels and dark teal copy separate content from the moving artwork.
 - **Responsive navigation.** Dedicated service pages and layouts for desktop and mobile.
 - **Accessible fallbacks.** Keyboard navigation, focus styles, semantic content and a static poster for reduced-motion preferences.
-- **Honest preview states.** Booking and enquiry delivery are explicitly marked as not connected.
+- **Clear next steps.** Every booking button uses the approved Calendly link. An optional calendar loads on request; direct email links open the visitor's email app.
+- **Concrete, honest examples.** An illustrative conversation and handover explain requested versus confirmed actions, alongside the vision, delivery process, costs, and customer controls.
 
 <details>
-<summary>Mobile contact experience</summary>
+<summary>Mobile homepage</summary>
 
-<img src="docs/screenshots/mobile.png" alt="Mobile KuberIQ contact form with pale blue-grey panels and dark teal labels" width="390">
+<img src="docs/screenshots/mobile.png" alt="Mobile KuberIQ homepage with pale blue-grey panels and dark teal copy" width="390">
 
 </details>
+
+## A clearer service story
+
+The homepage shows an illustrative conversation beside its handover record, followed by how we work, what a first project includes, CRM options and the vision. Requested actions are distinguished from confirmed bookings.
+
+![Illustrative conversation and handover](docs/screenshots/desktop.png)
 
 ## Pages
 
@@ -37,7 +44,9 @@ This repository contains the website experience. It does not contain an operatio
 | `/` | Introduce the offer, illustrate use cases and guide visitors to a service |
 | `/voice-agents.html` | Explain conversations, bookings, follow-up and CRM handover |
 | `/automations.html` | Explain workflow automation and connected website services |
-| `/contact.html` | Explain the engagement process and collect an enquiry once delivery is connected |
+| `/contact.html` | Vision, delivery process, Calendly scheduling, and both business email contacts |
+| `/privacy.html` | Explain email, scheduling, and browsing data flows |
+| `/terms.html` | Explain website examples and how project scope and costs are agreed |
 
 ## Run locally
 
@@ -63,7 +72,7 @@ npm run preview  # Local preview of the built files
 
 Direct dependencies are pinned to the audited lockfile versions; use `npm ci` for repeatable installs. Extensionless service routes (`/voice-agents`, `/automations`, `/contact`) and their trailing-slash forms select the same content as the canonical `.html` links when the host serves the app for those paths.
 
-`security-headers.ts` supplies CSP, framing restrictions, MIME-sniffing protection, referrer policy and permissions policy to both local servers. Production scripts are restricted to the same origin. Inline styles remain allowed for the existing React animation styles, and Google Fonts remain allowed to preserve typography. Only development permits Vite's inline bootstrap and loopback WebSocket connection. Form submission is blocked by CSP while delivery remains an explicit preview.
+`security-headers.ts` supplies CSP, framing restrictions, MIME-sniffing protection, referrer policy and permissions policy to both local servers. Production scripts are restricted to the same origin. Inline styles remain allowed for the existing React animation styles, and Google Fonts remain allowed to preserve typography. Only development permits Vite's inline bootstrap and loopback WebSocket connection. Only `https://calendly.com` is allowed as a frame source. There is no form submission endpoint; CSP continues to block form submissions. The optional scheduling iframe is absent until requested and removed when closed.
 
 Each production build emits `dist/_headers` from the same configuration. Hosts supporting that manifest format can apply it directly; other hosts (including any selected Wix deployment) must have the equivalent response headers configured through their supported hosting controls. Uploading a file does not establish that a host enforces it. Verify actual response headers after deployment. Do not substitute an HTML meta tag for framing protection. HTTPS/HSTS remains a host-level launch check; no production account or DNS is changed by this repository.
 
@@ -89,7 +98,7 @@ docs/               Public project brief, architecture and screenshots
 
 ## Status and boundaries
 
-This is a working frontend preview. The booking calendar, enquiry delivery, business-specific legal documents and production hosting acceptance remain separate launch tasks. Example workflows are illustrative; there are no claimed client results or guaranteed business outcomes.
+This is a working frontend with the owner-approved Calendly destination and email enquiry links. Website privacy and service information describe these implemented flows. Production hosting, deployed metadata/headers, and project-specific legal agreements remain separate acceptance tasks. Email delivery has not been tested by sending messages, and no meetings are booked as part of frontend checks. Example workflows are illustrative; there are no claimed client results or guaranteed business outcomes.
 
 Security coverage and limitations are recorded in [the review notes](docs/SECURITY-REVIEW.md). A passing build or an empty scanner report does not certify an application as vulnerability-free.
 
