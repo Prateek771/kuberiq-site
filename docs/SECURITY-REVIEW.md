@@ -10,7 +10,23 @@ The KuberIQ frontend source, locked npm dependencies and local preview. Live pro
 
 The initial source review found no demonstrated application-level exploit. The current contact form prevents submission and shows a fixed preview notice; it does not send or store the entered data. There is no implemented authentication system, database or application API in this repository.
 
-Strix's agent skills and local scanner are being configured separately. This document does not claim a completed Strix scan. Detailed local test evidence is deliberately excluded from the public repository.
+Strix's nine agent skills and CLI 1.7.0 are installed. A separate ChatGPT subscription authorization is still required; the first sign-in attempt timed out. **No completed Strix scan is claimed.** Detailed local evidence is excluded from the public repository.
+
+## Checks completed
+
+| Check | Observed result |
+| --- | --- |
+| npm dependency advisory audit | Zero reported known vulnerabilities on the assessment date |
+| Application tests | 15 passing |
+| Type checking / production build | Passed |
+| Source review | No demonstrated executable DOM injection sink, backend query or authentication surface |
+| Malformed service query | Falls back to an allowed service label; tested markup was not injected |
+| Markup submitted in preview fields | Remains field text; fixed preview notice displayed; no injected executable element observed |
+| Local Git configuration request | Blocked with HTTP 403 |
+| Local environment-file request | Returned HTML app shell, not environment-file contents |
+| Cross-origin request from an untrusted origin | No permissive Access-Control-Allow-Origin response |
+
+These are bounded observations, not a claim of exhaustive exploit testing.
 
 ## Areas to address before launch
 
@@ -19,6 +35,8 @@ Strix's agent skills and local scanner are being configured separately. This doc
 - Keep development servers bound to loopback. Publish only `dist/`, not source folders, local notes or environment files.
 - Review Google Fonts requests and media permissions for the intended privacy and asset policies.
 - When enabling enquiry delivery, implement server-side validation, abuse controls and appropriate privacy handling; client-side validation alone is insufficient.
+
+The tested local Vite responses omitted Content-Security-Policy, X-Frame-Options and X-Content-Type-Options. Production host behavior remains unverified. Vite also serves source modules by design; it must remain a local development tool.
 
 ## Limitations
 
