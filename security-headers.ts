@@ -8,7 +8,7 @@ export function securityHeaders(development = false) {
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data:",
     "media-src 'self'",
-    // Scheduling is loaded only after the visitor asks to view the calendar.
+    // Only the approved scheduling provider may be embedded.
     "frame-src https://calendly.com",
     `connect-src 'self'${development ? ' ws://127.0.0.1:* ws://localhost:*' : ''}`,
     "object-src 'none'",

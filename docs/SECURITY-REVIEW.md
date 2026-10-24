@@ -74,8 +74,27 @@ Strix's final machine-readable coverage file retains one `information disclosure
 
 The sandbox's default test runner could not load TypeScript; its alternate loader also reported failures. A separate unmodified Windows `npm test` run after scanning passed all 15 tests. The sandbox failure is not reproduced as an application regression; runner portability remains a limitation. The sandbox production build passed, and no application source fixes were made.
 
-## Hosting verification — 25 October 2026
+## Initial static hosting verification — 25 October 2026
 
 Before this release, the existing Wix production URL returned HTTPS 200 with `X-Content-Type-Options: nosniff`, but did not send the application's CSP, X-Frame-Options, or Referrer-Policy headers. Vite development/preview enforce `security-headers.ts`; the generated `_headers` file is a deployment manifest for hosts that support it and is not evidence of enforcement on Wix. No supported custom static response-header configuration was found in the targeted Wix Headless documentation search or installed CLI config/schema search. This is an observed hosting gap, not a passing production security-header check. The release does not disable existing host protections or alter authentication, DNS, or email.
 
 The source CSP now permits only the approved Calendly frame origin. The iframe is click-to-load, with no automatic third-party calendar load. Inactive enquiry fields are removed; direct email links replace the form, and form submissions remain blocked by the source policy.
+
+## Wix response-header fix — 25 October 2026
+
+The earlier hosting gap is resolved for all six application HTML pages. The same existing Wix site now serves those documents through a small Cloudflare-compatible worker, using the supported client/server output configuration. Generated HTML is excluded from client assets so those pages cannot bypass the response policy. Large animation files, scripts, styles and images remain static; their requests are governed by the page's CSP. No DNS, email, account, or provider changes were required.
+
+An unpublished Wix preview and the live `https://www.kuberiq.si/` deployment both returned the exact current build on all six routes with:
+
+- Content-Security-Policy: same-origin scripts/connections/media, the existing Google Fonts allowance, only Calendly frames, no objects/base URI/parent framing/form submissions.
+- X-Frame-Options: DENY.
+- X-Content-Type-Options: nosniff.
+- Referrer-Policy: strict-origin-when-cross-origin.
+- Permissions-Policy: camera, microphone, geolocation, and payment disabled.
+- Wix's existing Strict-Transport-Security header remains present.
+
+Verification passed: 26 unit/regression tests including five worker cases, one real HTTP preview security test, and the production build. Hosted preview checks confirmed page headers, exact assets, missing-page 404 behavior, working Calendly date-to-time selection, desktop/mobile layout, and native-detail canvas rendering. Live checks confirmed the same page headers/build, animation assets, and six-page sitemap. This is targeted hardening and regression verification, not a new full Strix penetration test or a claim that every vulnerability has been found.
+
+The owner requested the calendar be directly visible: it now loads automatically near the booking section with native lazy loading. The privacy notice reflects that provider connection. The old click-to-load description above records the initial release only. The public Wix `robots.txt` now advertises the working `/sitemap-index.xml`; both responses were verified, with six URLs in the XML. Search-engine indexing itself has not been established.
+
+References: [Wix client/server output configuration](https://dev.wix.com/docs/go-headless/wix-managed-headless/other-frameworks/the-wix-config-json-file), [unpublished Wix preview](https://dev.wix.com/docs/wix-cli/command-reference/project-commands/preview).

@@ -80,7 +80,7 @@ The renderer skips painting when progress, dimensions and resource readiness are
 
 The entrance system observes content at a 0.05 intersection threshold with a 64px bottom margin. Elements move from 12px below their final position over 350ms; their opacity remains 1. Content is therefore readable before the entrance finishes. Entrances run once, and keyboard focus reveals containing content immediately.
 
-Reduced motion prevents scene loading, retains the poster and removes entrance transitions. Preference changes release animation resources. Other implemented access features include a skip link, semantic navigation, current-page indication, visible focus outlines, an expandable mobile menu with Escape handling, native FAQ disclosure elements, an accessible calendar disclosure, descriptive iframe title, and direct email alternatives.
+Reduced motion prevents scene loading, retains the poster and removes entrance transitions. Preference changes release animation resources. Other implemented access features include a skip link, semantic navigation, current-page indication, visible focus outlines, an expandable mobile menu with Escape handling, native FAQ disclosure elements, a directly visible calendar with a descriptive iframe title, and direct email alternatives.
 
 These features describe implementation, not a comprehensive accessibility certification. Keyboard, assistive-technology, zoom and device testing remain separate acceptance activities.
 
@@ -88,11 +88,11 @@ These features describe implementation, not a comprehensive accessibility certif
 
 There is no enquiry endpoint, database, authentication flow, or operational CRM connection in this frontend. `booking.ts` centralizes the approved Calendly link and two business email addresses.
 
-`BookingSection` creates the Calendly iframe only after a visitor asks to view it. Closing the disclosure unmounts the iframe. A direct external booking link is always available. CSP allows only the Calendly frame origin while retaining existing script, object, framing, and form restrictions. Email links open the visitor's mail application; the site does not submit a message or display a false delivery confirmation.
+`BookingSection` places the meeting introduction on the left and the directly visible Calendly iframe on the right. Below 1000px they stack vertically. Native `loading="lazy"` defers the provider request until the booking area approaches the viewport. No extra disclosure click is required. A direct external booking link is always available. CSP allows only the Calendly frame origin while retaining existing script, object, framing, and form restrictions. Email links open the visitor's mail application; the site does not submit a message or display a false delivery confirmation.
 
-Dedicated privacy and terms pages explain these boundaries. Open Graph metadata points to a locally generated 1200x630 branded card. The six pages and current assets were verified on the Wix production URL on 25 October 2026; the hosting header gap is recorded in `SECURITY-REVIEW.md`.
+Dedicated privacy and terms pages explain these boundaries. Open Graph metadata points to a locally generated 1200x630 branded card. The six pages and current assets were verified on the Wix production URL on 25 October 2026; header verification is recorded in `SECURITY-REVIEW.md`.
 
-Wix intercepts `/sitemap.xml` on this deployment. The identical six-URL sitemap is available at `/sitemap-index.xml`, the non-reserved naming pattern recommended by Wix, and the source `robots.txt` points to it. The standard filename is retained for other static hosts. Wix serves its own crawler file: its Robots TXT API was updated and independently read back with the new sitemap directive while retaining its existing rules. The public cached crawler response still showed the former directive at release verification; edge propagation and search indexing remain unverified.
+Wix intercepts `/sitemap.xml` on this deployment. The identical six-URL sitemap is available at `/sitemap-index.xml`, the non-reserved naming pattern recommended by Wix, and the source `robots.txt` points to it. The standard filename is retained for other static hosts. Wix serves its own crawler file: its Robots TXT API was updated and independently read back with the new sitemap directive while retaining its existing rules. A subsequent public read on 25 October 2026 verified that the new directive has propagated and the six-URL sitemap returns HTTP 200. Search indexing itself remains unverified.
 
 Anchor navigation resolves the initial URL hash after React mounts and measures the sticky header once. A numeric Lenis destination prevents CSS scroll-margin and scroll-padding from being counted again. Popstate navigation also restores hash targets.
 
@@ -106,6 +106,8 @@ npm run build
 ```
 
 The build runs TypeScript project checking before Vite generates the six-page static output in `dist/`. The test command uses Node's built-in test runner. Test files exercise progress clamping, forward/reverse mapping, cover and canvas sizing, frame interpolation, progressive loading order, partial sequences, seek completion and cache lifecycle behavior.
+
+For Wix, `npm run build:wix` also packages `dist-wix/client` and `dist-wix/server`. `deployment/wix-worker.mjs` serves only the six exact generated HTML documents and their existing extensionless aliases, using `securityHeaders()` for every page/error response. It has no database, credentials, remote proxy, or form endpoint. Scripts, styles, images, video, and frame sequences remain static. The server output contains only JavaScript modules, using the entry aliases produced by Wix's official hosting adapter. The source `wix.config.json` retains the existing site/app identity and points to the two output directories. A Wix preview must verify HTML routing and static assets before release; a working `_headers` file on a local preview is insufficient.
 
 Run tests and browser acceptance checks against the same revision. Unit tests verify deterministic calculations and resource rules; they do not measure frame rate, network behavior or visual quality. Review cold loading, rapid scroll reversal, expanded content, reduced motion, fallback media and mobile navigation separately in the browser.
 
