@@ -6,7 +6,27 @@ Assessment date: 24 October 2026.
 
 The KuberIQ frontend source, locked npm dependencies and local preview. Live production infrastructure, DNS, third-party assets/providers and any future backend are outside this assessment.
 
-## Current status
+## Hardening follow-up
+
+The three initial hardening observations were addressed in commit `039c493` without changing styles, animation code, media or service copy:
+
+| Observation | Change | Local verification |
+| --- | --- | --- |
+| Missing preview response headers | Shared CSP, framing, MIME, referrer and permissions policies for Vite development and production preview; build emits a matching `_headers` manifest | Actual HTTP regression passes; browser renders and scrolls with no CSP warnings |
+| Inconsistent extensionless routes | Exact public route matching accepts canonical, extensionless and trailing-slash forms; unrelated suffixes no longer select service pages | Two routing regressions pass; browser confirms voice, automation and contact aliases |
+| Floating direct dependency versions | All 11 declarations pinned to the already-audited lockfile versions | `npm ci --ignore-scripts` succeeds with zero audit findings; no resolved package versions changed |
+
+Local validation: **17 unit tests pass**, including all 15 existing motion/cache tests; production build and HTTP-header test pass. Homepage screenshots before and after are byte-identical at the tested desktop viewport. Forward/reverse scroll, fonts, service pages, inert enquiry submission and malformed service queries were also checked in the browser. No application source/style/animation changes beyond route selection were made.
+
+**Focused Strix retest `security-review_3b9c` completed at 17:50 IST on 24 October 2026 with zero confirmed exploitable vulnerabilities.** It verified all three improvements within the local boundary using `chatgpt/gpt-6.1-sol` subscription access, with no API-key billing. Native TypeScript-capable Node 24.22.1 passed the unchanged 17 unit tests and one HTTP-header test in the sandbox too. Chromium checks covered 32 route navigations, seven query cases, CSP rejection of inline script, inert forms, advancing animation frames and reduced-motion fallback.
+
+The final machine-readable record contains 11 coverage entries and six gaps: five explicit follow-ups (production deployment, protected-file exposure beyond the isolated artifact, unavailable Windows Git history in Docker, unavailable offline advisory database, and a concurrent documentation edit), plus an unrecorded business-logic category label. These are retained rather than presenting zero findings as exhaustive coverage. The host-side review independently verified commit `039c4938df4dbef584eb8b081de354909d3c0ff7`, unchanged resolved dependencies and unchanged visual sources. A fresh host `npm audit --json` returned zero findings for 108 packages; this does not replace the unrun fresh Trivy/OSV checks. The concurrent edit was this report, made by the integrating agent; application source remained unchanged throughout the scan.
+
+The original scan below remains historical evidence, not a statement about the new response headers. The Docker scanner blocked external fonts by scope; the separate host-browser comparison verified actual typography and byte-identical homepage screenshots.
+
+Production hosting is still unassessed. `_headers` only takes effect on a host that supports that manifest; other hosts require equivalent configuration. Production CSP permits same-origin scripts, existing inline animation styles and Google Fonts. Development alone adds Vite inline bootstrap and loopback WebSocket allowances. Form submission remains blocked pending an implemented backend. See the [deployment notes](../README.md#security-configuration).
+
+## Initial assessment
 
 The initial source review found no demonstrated application-level exploit. The current contact form prevents submission and shows a fixed preview notice; it does not send or store the entered data. There is no implemented authentication system, database or application API in this repository.
 
@@ -35,16 +55,16 @@ The run recorded 26 coverage entries: 12 no-issue results, 10 ruled-out candidat
 
 These are bounded observations, not a claim of exhaustive exploit testing.
 
-## Areas to address before launch
+## Remaining launch checks
 
 - Configure and verify production response headers, including an appropriate Content Security Policy and framing restrictions.
-- Use `npm ci` with the committed lockfile and review dependency advisories regularly.
+- Use `npm ci` with the now-pinned manifest and committed lockfile; review dependency advisories regularly.
 - Keep development servers bound to loopback. Publish only `dist/`, not source folders, local notes or environment files.
 - Review Google Fonts requests and media permissions for the intended privacy and asset policies.
 - When enabling enquiry delivery, implement server-side validation, abuse controls and appropriate privacy handling; client-side validation alone is insufficient.
-- Make extensionless routes consistent with the canonical `.html` routes. The preview can return page HTML while the client selects the home page; this is a functional issue, not an access-control vulnerability.
+- Configure the chosen host to serve or redirect public aliases to their canonical `.html` pages; client page selection is fixed, but host routing and metadata behavior must also be verified at deployment.
 
-The tested local Vite responses omitted Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Referrer-Policy and Permissions-Policy. Production host behavior remains unverified. Vite development mode also serves source modules by design; it must remain a local development tool.
+At the initial scan, local Vite responses omitted Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Referrer-Policy and Permissions-Policy. The follow-up adds those headers locally. Production host behavior remains unverified. Vite development mode also serves source modules by design; it must remain a local development tool.
 
 ## Limitations
 
