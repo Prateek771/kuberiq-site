@@ -2,7 +2,7 @@ import { ArrowRight, ArrowUpRight, CalendarDays, Check, Mail } from 'lucide-reac
 import { discoveryBooking, enquiryEmails } from './booking';
 
 export function BookingLink({ className = '' }: { className?: string }) {
-  return <a className={`button ${className}`} href={discoveryBooking.url}><span>Book a Discovery Call</span><span className="button-arrow"><ArrowUpRight size={18} aria-hidden="true" /></span></a>;
+  return <a className={`button ${className}`} href={discoveryBooking.url} aria-label="Book a Discovery Call"><span className="button-label-full">Book a Discovery Call</span><span className="button-label-short" aria-hidden="true">Book</span><span className="button-arrow"><ArrowUpRight size={18} aria-hidden="true" /></span></a>;
 }
 
 export function Vision() {

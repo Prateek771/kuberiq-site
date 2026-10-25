@@ -146,3 +146,67 @@
   .legal-preview>span { margin-left: 0; width: 100%; }
   .legal-page { padding-top: 115px; }
 }
+
+/* Phone and tablet share the same pages as desktop, with their own alignment. */
+.button-label-short { display: none; }
+html, body { overflow-x: clip; }
+@media (max-width: 1100px) {
+  .desktop-nav { display: none; }
+  .menu-toggle { display: flex; flex-shrink: 0; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
+  .mobile-nav { display: grid; padding: 8px 20px 20px; }
+  .mobile-nav a { min-height: 48px; align-items: center; font-size: 1rem; }
+  .nav-wrap { min-width: 0; }
+  .nav-actions { margin-left: auto; min-width: 0; flex-shrink: 0; }
+  .nav-actions .button { font-size: .875rem; min-height: 44px; padding: 8px 14px; white-space: nowrap; }
+  .wordmark { flex-shrink: 0; }
+  .cinema-bottom h1 { font-size: clamp(2.2rem, 6vw, 3.5rem); max-width: 100%; }
+  .service-hero { min-height: 0; }
+  .service-hero h1 { font-size: clamp(2.4rem, 5.5vw, 4.2rem); max-width: none; }
+  .service-hero-bottom { display: grid; justify-items: stretch; align-items: start; gap: 20px; }
+  .service-hero-bottom > * { min-width: 0; max-width: 100%; }
+  .service-hero-bottom > p { width: 100%; }
+  .content-width, .cinema-scene, .booking-panel, .workflow-demo { min-width: 0; }
+}
+@media (max-width: 700px) {
+  .site-scene { inset: 0; width: 100%; height: 100svh; }
+  .site-scene .scene-poster,
+  .site-scene .scene-video,
+  .site-scene .scene-canvas {
+    top: 0; left: 0; width: 100%; height: 100%; max-width: 100%;
+    transform: none; mask-image: none; object-fit: cover; object-position: center 42%;
+  }
+  .cinema-scene {
+    min-height: 100svh;
+    padding: 108px 20px calc(32px + env(safe-area-inset-bottom));
+    gap: 28px;
+    justify-content: space-between;
+  }
+  .cinema-top, .cinema-bottom { display: flex; flex-direction: column; align-items: stretch; width: 100%; min-width: 0; gap: 16px; }
+  .cinema-services { width: auto; font-size: .75rem; line-height: 1.7; letter-spacing: .12em; }
+  .cinema-intro-copy {
+    width: 100%; max-width: none; text-align: left; font-size: 1rem; line-height: 1.6; padding: 16px 18px;
+  }
+  .cinema-bottom h1 { font-size: clamp(2.05rem, 8.6vw, 2.65rem); width: 100%; line-height: 1.08; }
+  .cinema-contact {
+    display: flex; flex-direction: column; align-items: flex-start; width: 100%; min-width: 0;
+    margin: 0; padding: 18px; gap: 12px;
+  }
+  .cinema-contact p, .cinema-outro-copy > p, .cinema-outro-copy .cinema-rules { display: block; max-width: none; font-size: 1rem; }
+  .cinema-contact .button, .service-hero-bottom .button { width: 100%; min-height: 48px; font-size: 1rem; justify-content: space-between; padding: 10px 14px 10px 18px; }
+  .hero-example, .cinema-scroll { min-height: 44px; font-size: .85rem; }
+  .cinema-scroll { position: static; margin-top: 4px; }
+  .cinema-spacer { height: 46svh; }
+  .nav-wrap { padding: max(12px, env(safe-area-inset-top)) 16px 12px; }
+  .section-pad { padding-block: 72px; }
+  .calendar-container iframe { height: min(780px, 120svh); }
+}
+@media (max-width: 480px) {
+  .nav-actions .button-label-full { display: none; }
+  .nav-actions .button-label-short { display: inline; }
+  .nav-actions .button { padding-inline: 14px; }
+}
+@media (max-width: 900px) and (max-height: 520px) {
+  .cinema-scene { min-height: auto; padding-top: 88px; gap: 16px; }
+  .cinema-spacer { height: 28svh; }
+  .cinema-contact p { display: block; }
+}

@@ -14,7 +14,9 @@ export default function ScrollScene() {
     const scene = root.current!, surface = canvas.current!, visible = video.current!;
     const context = surface.getContext('2d', { alpha: false });
     const preference = matchMedia('(prefers-reduced-motion: reduce)');
+    const mobileFrames = matchMedia('(max-width: 767px)');
     let reduced = preference.matches, disposed = false, dirty = true;
+    let mobile = mobileFrames.matches;
     let lastProgress = -1, viewport = innerHeight, documentHeight = document.documentElement.scrollHeight;
     let frames: ImageBitmap[] = [], loading: AbortController | null = null;
     let previewSettled = false, travelDirection = 1;
@@ -195,7 +197,14 @@ export default function ScrollScene() {
     const wake = () => { dirty = true; };
     visible.addEventListener('loadeddata', ready); visible.addEventListener('error', error);
     visible.addEventListener('seeked', wake); visible.addEventListener('canplay', wake);
+    const changeFrameSet = () => {
+      if (mobileFrames.matches === mobile) return;
+      mobile = mobileFrames.matches;
+      clearCache();
+      if (!reduced) start();
+    };
     preference.addEventListener('change', changePreference);
+    mobileFrames.addEventListener('change', changeFrameSet);
     const unsubscribe = subscribeScrollFrame(tick);
     const observer = new ResizeObserver(resize);
     observer.observe(surface); observer.observe(document.body);
@@ -207,6 +216,7 @@ export default function ScrollScene() {
       window.removeEventListener('pageshow', resize);
       document.removeEventListener('visibilitychange', wake);
       preference.removeEventListener('change', changePreference);
+      mobileFrames.removeEventListener('change', changeFrameSet);
       visible.removeEventListener('loadeddata', ready); visible.removeEventListener('error', error);
       visible.removeEventListener('seeked', wake); visible.removeEventListener('canplay', wake);
       visible.removeAttribute('src'); visible.load();
