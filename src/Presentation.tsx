@@ -1,5 +1,47 @@
+import { useEffect, useRef } from 'react';
 import { ArrowRight, ArrowUpRight, CalendarDays, Check, Mail } from 'lucide-react';
 import { discoveryBooking, enquiryEmails } from './booking';
+
+function calendarSrc() {
+  const params = new URLSearchParams({
+    embed_domain: window.location.host,
+    embed_type: 'Inline',
+    hide_event_type_details: '1',
+    hide_gdpr_banner: '1',
+    background_color: 'dce7ec',
+    text_color: '183f47',
+    primary_color: '195461',
+  });
+  return `${discoveryBooking.url}?${params.toString()}`;
+}
+
+function CalendarFrame() {
+  const frame = useRef<HTMLIFrameElement>(null);
+  const clip = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      if (!frame.current || !clip.current) return;
+      let host = '';
+      try { host = new URL(event.origin).hostname; } catch { return; }
+      if (host !== 'calendly.com' && !host.endsWith('.calendly.com')) return;
+      let data = event.data as { event?: string; payload?: { height?: string | number } };
+      if (typeof event.data === 'string') {
+        try { data = JSON.parse(event.data); } catch { return; }
+      }
+      if (data?.event !== 'calendly.page_height') return;
+      const value = Number.parseFloat(String(data.payload?.height ?? ''));
+      if (!Number.isFinite(value) || value < 420 || value > 1600) return;
+      // The reported height still includes the empty cookie-panel slot.
+      const retiredBannerSpace = 124;
+      const full = Math.round(value);
+      frame.current.style.height = `${full}px`;
+      clip.current.style.height = `${Math.max(420, full - retiredBannerSpace)}px`;
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, []);
+  return <div className="calendar-clip" ref={clip}><iframe ref={frame} title="Book a KuberIQ discovery call with Calendly" src={calendarSrc()} loading="lazy" referrerPolicy="strict-origin-when-cross-origin" data-lenis-prevent/></div>;
+}
 
 export function BookingLink({ className = '' }: { className?: string }) {
   return <a className={`button ${className}`} href={discoveryBooking.url} aria-label="Book a Discovery Call"><span className="button-label-full">Book a Discovery Call</span><span className="button-label-short" aria-hidden="true">Book</span><span className="button-arrow"><ArrowUpRight size={18} aria-hidden="true" /></span></a>;
@@ -80,7 +122,7 @@ export function BookingSection({ showContact = false }: { showContact?: boolean 
   return <section id="contact" className="section-pad booking-section"><div className="content-width booking-panel">
     <div className="booking-intro"><div><h2>Let’s start with<br/>one useful conversation.</h2><p className="meeting-details"><CalendarDays size={18} aria-hidden="true"/>30 minutes · Online meeting</p><p>Tell us about one task that keeps coming back to your team. We’ll look at how it works today and where an AI voice agent or automation could help.</p><ol className="meeting-agenda"><li>Walk through the calls, bookings, or follow-up taking up your time.</li><li>Look at the tools you use and the decisions that should stay with your team.</li><li>Agree a practical next step and what we need to check before proposing a solution.</li></ol><p className="booking-instruction">Choose a date and time in the calendar. After booking, you’ll receive the meeting details by email.</p><p className="booking-privacy">Scheduling is provided by Calendly. <a href="/privacy.html">Privacy details</a></p></div>
     </div>
-    <div id="booking-calendar" className="calendar-container"><p>If the calendar doesn’t appear, <a href={discoveryBooking.url}>open Calendly directly <ArrowUpRight size={14} aria-hidden="true"/></a>.</p><iframe title="Book a KuberIQ discovery call with Calendly" src={`${discoveryBooking.url}?embed_type=Inline&hide_event_type_details=1&background_color=dce7ec&text_color=183f47&primary_color=195461`} loading="lazy" referrerPolicy="strict-origin-when-cross-origin" data-lenis-prevent/></div>
+    <div id="booking-calendar" className="calendar-container"><p>If the calendar doesn’t appear, <a href={discoveryBooking.url}>open Calendly directly <ArrowUpRight size={14} aria-hidden="true"/></a>.</p><CalendarFrame/></div>
     {showContact ? <ContactOptions/> : <div className="booking-email"><span>Prefer email?</span>{enquiryEmails.map(email => <a key={email} href={`mailto:${email}`}>{email}<ArrowUpRight size={14} aria-hidden="true"/></a>)}</div>}
   </div></section>;
 }
@@ -90,7 +132,7 @@ export function LegalContent({ kind }: { kind: 'privacy' | 'terms' }) {
     {kind === 'privacy' ? <>
       <h2>Contacting KuberIQ</h2><p>This notice describes the contact and booking options on the KuberIQ website. Email enquiries go to the address you choose: {enquiryEmails.map((email, i) => <span key={email}>{i ? ' or ' : ''}<a href={`mailto:${email}`}>{email}</a></span>)}. We use the details you send to respond to your enquiry and discuss the requested work. Please do not send passwords, payment details, or sensitive customer records.</p>
       <h2>Email enquiries</h2><p>This website does not have a form submission service or store enquiry drafts. Email links open your email application; a message is only sent when you send it from there. Your email provider and ours process the message as part of delivering and storing email.</p>
-      <h2>Booking a meeting</h2><p>Booking links take you to Calendly. The embedded calendar loads automatically as you approach the booking section. Loading it connects your browser to Calendly, which may use cookies and process technical information. Information you submit there is used to arrange the meeting and is available to the meeting organiser. See <a href="https://calendly.com/legal/privacy-notice">Calendly’s privacy notice</a> for its data practices. You can manage cookies through Calendly’s cookie settings and your browser.</p>
+      <h2>Booking a meeting</h2><p>Booking links take you to Calendly. The embedded calendar loads automatically as you approach the booking section. Loading it connects your browser to Calendly, which may use cookies and process technical information. Information you submit there is used to arrange the meeting and is available to the meeting organiser. See <a href="https://calendly.com/legal/privacy-notice">Calendly’s privacy notice</a> for its data practices. You can manage cookies in your browser.</p>
       <h2>Browsing this site</h2><p>We have not added advertising trackers or visitor analytics to this site. Page delivery requires technical information such as your IP address and browser request; the hosting service may keep access logs. Typography loads from Google Fonts, which receives the requests needed to supply the font files. Read <a href="https://policies.google.com/privacy">Google’s privacy policy</a>.</p>
       <h2>Your questions and choices</h2><p>You can choose email instead of the embedded calendar. To ask about information you have shared with KuberIQ, request a correction or deletion, or raise a privacy concern, email <a href={`mailto:${enquiryEmails[0]}`}>{enquiryEmails[0]}</a>. We will review the request and explain any information we need to retain for the work or applicable obligations.</p>
       <h2>Information used in client projects</h2><p>A client project may involve different systems and information. The agreed scope will identify the relevant providers, access, responsibilities, and data handling before those systems are connected. This website notice does not describe a deployed client voice agent.</p>
